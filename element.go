@@ -1,0 +1,56 @@
+package termtree
+
+// ElementType classifies a detected TUI element.
+type ElementType int
+
+const (
+	ElementPanel    ElementType = iota // Box-drawing bordered region
+	ElementButton                      // Bracketed text like [Save], <OK>
+	ElementInput                       // Cursor-adjacent editable field
+	ElementMenuItem                    // Item in a vertical list/menu
+	ElementStatusBar                   // Color-contiguous bar at screen edge
+	ElementMenuBar                     // Horizontal menu at top
+	ElementTab                         // Tab-bar label
+	ElementText                        // Generic styled text region
+)
+
+var elementTypeNames = [...]string{
+	"panel",
+	"button",
+	"input",
+	"menu_item",
+	"status_bar",
+	"menu_bar",
+	"tab",
+	"text",
+}
+
+func (t ElementType) String() string {
+	if int(t) < len(elementTypeNames) {
+		return elementTypeNames[t]
+	}
+	return "unknown"
+}
+
+// Rect defines a rectangular region on the terminal grid.
+type Rect struct {
+	Row    int `json:"row"`
+	Col    int `json:"col"`
+	Width  int `json:"width"`
+	Height int `json:"height"`
+}
+
+// Element represents a detected interactive or structural TUI element.
+type Element struct {
+	ID       int         `json:"id"`
+	Type     ElementType `json:"type"`
+	Label    string      `json:"label"`
+	Bounds   Rect        `json:"bounds"`
+	Focused  bool        `json:"focused"`
+	Children []int       `json:"children,omitempty"`
+}
+
+// ElementMap is the result of detecting elements on a styled grid.
+type ElementMap struct {
+	Elements []Element `json:"elements"`
+}
