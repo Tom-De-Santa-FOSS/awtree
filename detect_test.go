@@ -363,6 +363,74 @@ func TestDetect_MenuBar_TopRowWithBG(t *testing.T) {
 	}
 }
 
+func TestDetect_RealisticTUI(t *testing.T) {
+	g := NewGrid(24, 80)
+
+	// Menu bar (row 0, colored BG).
+	for c := 0; c < 80; c++ {
+		g.Set(0, c, Cell{Char: ' ', BG: 4})
+	}
+	g.SetText(0, 1, "File  Edit  View", DefaultColor, 4, 0)
+
+	// Panel (rows 1-20).
+	g.Set(1, 0, Cell{Char: '┌'})
+	for c := 1; c < 59; c++ {
+		g.Set(1, c, Cell{Char: '─'})
+	}
+	g.Set(1, 59, Cell{Char: '┐'})
+	for r := 2; r < 20; r++ {
+		g.Set(r, 0, Cell{Char: '│'})
+		g.Set(r, 59, Cell{Char: '│'})
+	}
+	g.Set(20, 0, Cell{Char: '└'})
+	for c := 1; c < 59; c++ {
+		g.Set(20, c, Cell{Char: '─'})
+	}
+	g.Set(20, 59, Cell{Char: '┘'})
+
+	// Buttons on row 21.
+	g.SetText(21, 30, "[Save]", DefaultColor, DefaultColor, 0)
+	g.SetText(21, 40, "[Cancel]", DefaultColor, DefaultColor, 0)
+
+	// Status bar (bottom row).
+	for c := 0; c < 80; c++ {
+		g.Set(23, c, Cell{Char: ' ', BG: 2})
+	}
+	g.SetText(23, 2, "Ready", DefaultColor, 2, 0)
+
+	m := Detect(g)
+
+	types := make(map[ElementType]int)
+	for _, el := range m.Elements {
+		types[el.Type]++
+	}
+
+	if types[ElementPanel] < 1 {
+		t.Error("missing panel")
+	}
+	if types[ElementButton] < 2 {
+		t.Errorf("expected 2+ buttons, got %d", types[ElementButton])
+	}
+	if types[ElementMenuBar] < 1 {
+		t.Error("missing menu bar")
+	}
+	if types[ElementStatusBar] < 1 {
+		t.Error("missing status bar")
+	}
+
+	// All IDs unique and > 0.
+	ids := make(map[int]bool)
+	for _, el := range m.Elements {
+		if el.ID == 0 {
+			t.Error("ID 0 found")
+		}
+		if ids[el.ID] {
+			t.Errorf("duplicate ID %d", el.ID)
+		}
+		ids[el.ID] = true
+	}
+}
+
 func TestDetect_SequentialIDs(t *testing.T) {
 	g := NewGrid(10, 40)
 	// Panel.
