@@ -491,6 +491,28 @@ func TestOverlapsAny_NoOverlap(t *testing.T) {
 	}
 }
 
+func TestIsButtonLabel(t *testing.T) {
+	tests := []struct {
+		input string
+		want  bool
+	}{
+		{"", false},
+		{"Save", true},
+		{"OK", true},
+		{"Cancel", true},
+		{"0", false},         // starts with digit
+		{"123", false},       // starts with digit
+		{"a very long button label that exceeds twenty chars", false},
+		{string([]rune{0x01}), false}, // non-printable
+	}
+	for _, tt := range tests {
+		got := isButtonLabel(tt.input)
+		if got != tt.want {
+			t.Errorf("isButtonLabel(%q) = %v, want %v", tt.input, got, tt.want)
+		}
+	}
+}
+
 func TestDetect_SequentialIDs(t *testing.T) {
 	g := NewGrid(10, 40)
 	// Panel.

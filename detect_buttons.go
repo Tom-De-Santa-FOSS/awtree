@@ -1,6 +1,9 @@
 package awtree
 
-import "unicode"
+import (
+	"unicode"
+	"unicode/utf8"
+)
 
 // buttonPairs defines bracket pairs that indicate buttons.
 var buttonPairs = [][2]rune{
@@ -73,12 +76,12 @@ func isButtonLabel(text string) bool {
 		return false
 	}
 
-	runes := []rune(text)
-	if !unicode.IsLetter(runes[0]) && !unicode.IsUpper(runes[0]) {
+	r, _ := utf8.DecodeRuneInString(text)
+	if !unicode.IsLetter(r) {
 		return false
 	}
 
-	for _, r := range runes {
+	for _, r := range text {
 		if !unicode.IsPrint(r) {
 			return false
 		}
