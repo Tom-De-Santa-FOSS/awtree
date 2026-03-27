@@ -605,6 +605,40 @@ func TestDetect_RowWithTwoActiveSegments_NotDetectedAsTabs(t *testing.T) {
 	}
 }
 
+func TestDetect_RoundedCornerPanel(t *testing.T) {
+	g := NewGrid(5, 12)
+	// Lazygit-style rounded corners: ╭╮╰╯
+	g.Set(0, 0, Cell{Char: '╭'})
+	for c := 1; c < 9; c++ {
+		g.Set(0, c, Cell{Char: '─'})
+	}
+	g.Set(0, 9, Cell{Char: '╮'})
+	for r := 1; r < 4; r++ {
+		g.Set(r, 0, Cell{Char: '│'})
+		g.Set(r, 9, Cell{Char: '│'})
+	}
+	g.Set(4, 0, Cell{Char: '╰'})
+	for c := 1; c < 9; c++ {
+		g.Set(4, c, Cell{Char: '─'})
+	}
+	g.Set(4, 9, Cell{Char: '╯'})
+
+	m := Detect(g)
+
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementPanel {
+			found = true
+			if el.Bounds.Width != 10 || el.Bounds.Height != 5 {
+				t.Errorf("panel bounds = %dx%d, want 10x5", el.Bounds.Width, el.Bounds.Height)
+			}
+		}
+	}
+	if !found {
+		t.Error("rounded corner panel not detected")
+	}
+}
+
 func TestDetect_SequentialIDs(t *testing.T) {
 	g := NewGrid(10, 40)
 	// Panel.
