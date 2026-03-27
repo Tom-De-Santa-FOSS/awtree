@@ -46,3 +46,18 @@ func TestGrid_SetText(t *testing.T) {
 		}
 	}
 }
+
+func TestGrid_SetText_MultiByte(t *testing.T) {
+	g := NewGrid(5, 20)
+	// 'é' is 2 bytes in UTF-8; characters after it should NOT skip a column.
+	g.SetText(1, 0, "élan", DefaultColor, DefaultColor, 0)
+
+	// "élan" is 4 runes, should occupy columns 0-3.
+	expected := []rune{'é', 'l', 'a', 'n'}
+	for i, want := range expected {
+		got := g.At(1, i).Char
+		if got != want {
+			t.Errorf("cell[1,%d] = %q, want %q", i, got, want)
+		}
+	}
+}
