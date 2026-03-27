@@ -165,6 +165,40 @@ func TestDetect_StatusBar(t *testing.T) {
 	}
 }
 
+func TestDetect_MenuItems_VerticalListWithOneHighlighted(t *testing.T) {
+	g := NewGrid(10, 30)
+	// 3 items at same column, one reverse-video.
+	g.SetText(2, 2, "  Open File  ", DefaultColor, DefaultColor, 0)
+	g.SetText(3, 2, "  Save File  ", DefaultColor, DefaultColor, AttrReverse)
+	g.SetText(4, 2, "  Close All  ", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+
+	var menuItems []Element
+	for _, el := range m.Elements {
+		if el.Type == ElementMenuItem {
+			menuItems = append(menuItems, el)
+		}
+	}
+
+	if len(menuItems) < 3 {
+		t.Fatalf("expected 3 menu items, got %d", len(menuItems))
+	}
+
+	focusCount := 0
+	for _, el := range menuItems {
+		if el.Focused {
+			focusCount++
+			if el.Label != "Save File" {
+				t.Errorf("focused item label = %q, want %q", el.Label, "Save File")
+			}
+		}
+	}
+	if focusCount != 1 {
+		t.Errorf("expected 1 focused item, got %d", focusCount)
+	}
+}
+
 func TestDetect_SequentialIDs(t *testing.T) {
 	g := NewGrid(10, 40)
 	// Panel.

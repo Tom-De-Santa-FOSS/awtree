@@ -32,12 +32,24 @@ func Detect(g *Grid) *ElementMap {
 	}
 	elements = append(elements, buttons...)
 
-	reverseRegions := detectReverseRegions(g)
-	for i := range reverseRegions {
-		reverseRegions[i].ID = nextID
+	menuItems := detectMenuItems(g)
+	for i := range menuItems {
+		menuItems[i].ID = nextID
 		nextID++
 	}
-	elements = append(elements, reverseRegions...)
+	elements = append(elements, menuItems...)
+
+	// Standalone reverse regions (not part of a menu).
+	reverseRegions := detectReverseRegions(g)
+	for i := range reverseRegions {
+		// Skip if already covered by a menu item at same position.
+		if overlapsAny(reverseRegions[i], menuItems) {
+			continue
+		}
+		reverseRegions[i].ID = nextID
+		nextID++
+		elements = append(elements, reverseRegions[i])
+	}
 
 	statusBars := detectStatusBars(g)
 	for i := range statusBars {
@@ -47,4 +59,13 @@ func Detect(g *Grid) *ElementMap {
 	elements = append(elements, statusBars...)
 
 	return &ElementMap{Elements: elements}
+}
+
+func overlapsAny(el Element, others []Element) bool {
+	for _, o := range others {
+		if el.Bounds.Row == o.Bounds.Row && el.Bounds.Col == o.Bounds.Col {
+			return true
+		}
+	}
+	return false
 }
