@@ -1,5 +1,17 @@
 package awtree
 
+const (
+	// majorityThresholdPct is the percentage of row width above which a span is
+	// considered a bar (status/menu), not an input field.
+	majorityThresholdPct = 60
+
+	// maxButtonWidth is the maximum scan width for a button bracket pair.
+	maxButtonWidth = 30
+
+	// maxButtonLabelLen is the maximum allowed button label length.
+	maxButtonLabelLen = 20
+)
+
 // Detect analyzes a styled terminal grid and returns detected UI elements.
 // Elements are assigned sequential IDs starting from 1.
 func Detect(g *Grid) *ElementMap {
@@ -7,7 +19,7 @@ func Detect(g *Grid) *ElementMap {
 		return &ElementMap{}
 	}
 
-	var b elementBuilder
+	b := elementBuilder{nextID: 1}
 
 	// Detection order matches confidence ranking.
 	panels := detectPanels(g)
@@ -40,9 +52,6 @@ type elementBuilder struct {
 }
 
 func (b *elementBuilder) add(el Element) {
-	if b.nextID == 0 {
-		b.nextID = 1
-	}
 	el.ID = b.nextID
 	b.nextID++
 	b.elements = append(b.elements, el)

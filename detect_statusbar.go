@@ -54,7 +54,7 @@ func detectBarRow(g *Grid, row int) (Element, bool) {
 	}
 
 	// Must cover >60% of cells and not be the default color.
-	threshold := g.Cols * 60 / 100
+	threshold := g.Cols * majorityThresholdPct / 100
 	if maxCount < threshold || dominantBG == DefaultColor {
 		return Element{}, false
 	}

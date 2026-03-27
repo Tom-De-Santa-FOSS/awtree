@@ -36,7 +36,7 @@ func detectButtons(g *Grid) []Element {
 // traceButton attempts to find a closing bracket and extract the label.
 func traceButton(g *Grid, row, col int, open, close rune) (Element, bool) {
 	var label []rune
-	maxWidth := 30 // Buttons shouldn't be wider than this.
+	maxWidth := maxButtonWidth
 
 	for c := col + 1; c < g.Cols && c < col+maxWidth; c++ {
 		ch := g.At(row, c).Char
@@ -72,7 +72,7 @@ func traceButton(g *Grid, row, col int, open, close rune) (Element, bool) {
 // isButtonLabel validates that text looks like a button label:
 // short, starts with a letter, mostly printable.
 func isButtonLabel(text string) bool {
-	if len(text) == 0 || len(text) > 20 {
+	if len(text) == 0 || len(text) > maxButtonLabelLen {
 		return false
 	}
 

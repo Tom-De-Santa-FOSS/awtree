@@ -102,7 +102,7 @@ func findDistinctBGSpans(g *Grid, row int) []Element {
 		}
 
 		// Skip if it spans most of the row (likely a bar, not an input).
-		if width > g.Cols*60/100 {
+		if width > g.Cols*majorityThresholdPct/100 {
 			continue
 		}
 
