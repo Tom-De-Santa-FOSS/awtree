@@ -462,6 +462,35 @@ func TestDetect_MenuItems_NoDuplicatesWithMultipleHighlights(t *testing.T) {
 	}
 }
 
+func TestOverlapsAny_BoundingBoxIntersection(t *testing.T) {
+	// A reverse region starting inside a menu item's bounds should overlap.
+	menuItem := Element{
+		Type:   ElementMenuItem,
+		Bounds: Rect{Row: 3, Col: 2, Width: 13, Height: 1},
+	}
+	// Reverse region starts at col 5 (inside menu item col 2..14).
+	reverseRegion := Element{
+		Bounds: Rect{Row: 3, Col: 5, Width: 8, Height: 1},
+	}
+
+	if !overlapsAny(reverseRegion, []Element{menuItem}) {
+		t.Error("expected overlapsAny to return true for bounding-box intersection")
+	}
+}
+
+func TestOverlapsAny_NoOverlap(t *testing.T) {
+	menuItem := Element{
+		Bounds: Rect{Row: 3, Col: 2, Width: 13, Height: 1},
+	}
+	other := Element{
+		Bounds: Rect{Row: 5, Col: 2, Width: 13, Height: 1},
+	}
+
+	if overlapsAny(other, []Element{menuItem}) {
+		t.Error("expected no overlap for different rows")
+	}
+}
+
 func TestDetect_SequentialIDs(t *testing.T) {
 	g := NewGrid(10, 40)
 	// Panel.

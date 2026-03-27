@@ -56,9 +56,14 @@ func (b *elementBuilder) addAll(els []Element) {
 
 func overlapsAny(el Element, others []Element) bool {
 	for _, o := range others {
-		if el.Bounds.Row == o.Bounds.Row && el.Bounds.Col == o.Bounds.Col {
+		if rectsOverlap(el.Bounds, o.Bounds) {
 			return true
 		}
 	}
 	return false
+}
+
+func rectsOverlap(a, b Rect) bool {
+	return a.Row < b.Row+b.Height && a.Row+a.Height > b.Row &&
+		a.Col < b.Col+b.Width && a.Col+a.Width > b.Col
 }
