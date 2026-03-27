@@ -233,6 +233,50 @@ func TestDetect_TabBar(t *testing.T) {
 	}
 }
 
+func TestDetect_InputField_UnderscorePlaceholder(t *testing.T) {
+	g := NewGrid(10, 40)
+	// Label followed by underscores (common input pattern).
+	g.SetText(3, 2, "Name: ", DefaultColor, DefaultColor, 0)
+	g.SetText(3, 8, "________________", DefaultColor, DefaultColor, AttrUnderline)
+
+	m := Detect(g)
+
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementInput {
+			found = true
+			if el.Bounds.Row != 3 {
+				t.Errorf("input row = %d, want 3", el.Bounds.Row)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("input field not detected")
+	}
+}
+
+func TestDetect_InputField_DistinctBackground(t *testing.T) {
+	g := NewGrid(10, 40)
+	// Input field: region with distinct BG color.
+	g.SetText(5, 10, "              ", DefaultColor, 7, 0) // white bg, empty
+	g.SetText(5, 10, "hello", DefaultColor, 7, 0)
+
+	m := Detect(g)
+
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementInput {
+			found = true
+			if el.Label != "hello" {
+				t.Errorf("input value = %q, want %q", el.Label, "hello")
+			}
+		}
+	}
+	if !found {
+		t.Fatal("input field with distinct BG not detected")
+	}
+}
+
 func TestDetect_SequentialIDs(t *testing.T) {
 	g := NewGrid(10, 40)
 	// Panel.

@@ -39,6 +39,13 @@ func Detect(g *Grid) *ElementMap {
 	}
 	elements = append(elements, menuItems...)
 
+	inputs := detectInputs(g)
+	for i := range inputs {
+		inputs[i].ID = nextID
+		nextID++
+	}
+	elements = append(elements, inputs...)
+
 	tabs := detectTabs(g)
 	for i := range tabs {
 		tabs[i].ID = nextID
