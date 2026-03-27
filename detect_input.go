@@ -1,9 +1,9 @@
 package awtree
 
 // detectInputs finds input-like regions on the grid:
-// 1. Underlined spans (common text input pattern)
-// 2. Horizontal spans with a distinct non-default BG color surrounded by
-//    default-BG cells (form fields with highlighted background)
+//  1. Underlined spans (common text input pattern)
+//  2. Horizontal spans with a distinct non-default BG color surrounded by
+//     default-BG cells (form fields with highlighted background)
 func detectInputs(g *Grid) []Element {
 	var elements []Element
 

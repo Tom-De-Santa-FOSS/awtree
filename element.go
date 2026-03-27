@@ -4,14 +4,14 @@ package awtree
 type ElementType int
 
 const (
-	ElementPanel    ElementType = iota // Box-drawing bordered region
-	ElementButton                      // Bracketed text like [Save], <OK>
-	ElementInput                       // Cursor-adjacent editable field
-	ElementMenuItem                    // Item in a vertical list/menu
-	ElementStatusBar                   // Color-contiguous bar at screen edge
-	ElementMenuBar                     // Horizontal menu at top
-	ElementTab                         // Tab-bar label
-	ElementText                        // Generic styled text region
+	ElementPanel     ElementType = iota // Box-drawing bordered region
+	ElementButton                       // Bracketed text like [Save], <OK>
+	ElementInput                        // Cursor-adjacent editable field
+	ElementMenuItem                     // Item in a vertical list/menu
+	ElementStatusBar                    // Color-contiguous bar at screen edge
+	ElementMenuBar                      // Horizontal menu at top
+	ElementTab                          // Tab-bar label
+	ElementText                         // Generic styled text region
 )
 
 var elementTypeNames = [...]string{

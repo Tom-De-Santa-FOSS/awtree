@@ -500,8 +500,8 @@ func TestIsButtonLabel(t *testing.T) {
 		{"Save", true},
 		{"OK", true},
 		{"Cancel", true},
-		{"0", false},         // starts with digit
-		{"123", false},       // starts with digit
+		{"0", false},   // starts with digit
+		{"123", false}, // starts with digit
 		{"a very long button label that exceeds twenty chars", false},
 		{string([]rune{0x01}), false}, // non-printable
 	}

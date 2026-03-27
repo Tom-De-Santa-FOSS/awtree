@@ -23,8 +23,10 @@ func TestSerialize_Nil(t *testing.T) {
 func TestSerialize_Button(t *testing.T) {
 	m := &ElementMap{
 		Elements: []Element{
-			{ID: 1, Type: ElementButton, Label: "Save", Focused: true,
-				Bounds: Rect{Row: 12, Col: 35, Width: 6, Height: 1}},
+			{
+				ID: 1, Type: ElementButton, Label: "Save", Focused: true,
+				Bounds: Rect{Row: 12, Col: 35, Width: 6, Height: 1},
+			},
 		},
 	}
 	got := Serialize(m)
@@ -39,8 +41,10 @@ func TestSerialize_Button(t *testing.T) {
 func TestSerialize_Panel(t *testing.T) {
 	m := &ElementMap{
 		Elements: []Element{
-			{ID: 1, Type: ElementPanel, Label: "Files",
-				Bounds: Rect{Row: 0, Col: 0, Width: 40, Height: 20}},
+			{
+				ID: 1, Type: ElementPanel, Label: "Files",
+				Bounds: Rect{Row: 0, Col: 0, Width: 40, Height: 20},
+			},
 		},
 	}
 	got := Serialize(m)
