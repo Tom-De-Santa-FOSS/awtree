@@ -68,8 +68,9 @@ func detectBarRow(g *Grid, row int) (Element, bool) {
 		}
 	}
 
+	// Classify based on position: top half = menu bar, bottom half = status bar.
 	typ := ElementStatusBar
-	if row == 0 || row == 1 {
+	if row < g.Rows/2 {
 		typ = ElementMenuBar
 	}
 

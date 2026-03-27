@@ -4,14 +4,14 @@ package awtree
 type ElementType int
 
 const (
-	ElementPanel    ElementType = iota // Box-drawing bordered region
-	ElementButton                      // Bracketed text like [Save], <OK>
-	ElementInput                       // Cursor-adjacent editable field
-	ElementMenuItem                    // Item in a vertical list/menu
-	ElementStatusBar                   // Color-contiguous bar at screen edge
-	ElementMenuBar                     // Horizontal menu at top
-	ElementTab                         // Tab-bar label
-	ElementText                        // Generic styled text region
+	ElementPanel     ElementType = iota // Box-drawing bordered region
+	ElementButton                       // Bracketed text like [Save], <OK>
+	ElementInput                        // Cursor-adjacent editable field
+	ElementMenuItem                     // Item in a vertical list/menu
+	ElementStatusBar                    // Color-contiguous bar at screen edge
+	ElementMenuBar                      // Horizontal menu at top
+	ElementTab                          // Tab-bar label
+	ElementText                         // Generic styled text region
 )
 
 var elementTypeNames = [...]string{
@@ -30,6 +30,24 @@ func (t ElementType) String() string {
 		return elementTypeNames[t]
 	}
 	return "unknown"
+}
+
+var elementTypeShortNames = [...]string{
+	"panel",
+	"btn",
+	"input",
+	"item",
+	"status",
+	"menu",
+	"tab",
+	"text",
+}
+
+func (t ElementType) ShortString() string {
+	if int(t) < len(elementTypeShortNames) {
+		return elementTypeShortNames[t]
+	}
+	return "?"
 }
 
 // Rect defines a rectangular region on the terminal grid.

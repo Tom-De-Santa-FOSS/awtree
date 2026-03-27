@@ -4,14 +4,14 @@ package awtree
 type Attr uint16
 
 const (
-	AttrBold      Attr = 1 << iota
-	AttrFaint          //nolint:revive // consistent naming
-	AttrItalic         //nolint:revive
-	AttrUnderline      //nolint:revive
-	AttrBlink          //nolint:revive
-	AttrReverse        //nolint:revive
-	AttrConceal        //nolint:revive
-	AttrStrikethrough  //nolint:revive
+	AttrBold          Attr = 1 << iota
+	AttrFaint              //nolint:revive // consistent naming
+	AttrItalic             //nolint:revive
+	AttrUnderline          //nolint:revive
+	AttrBlink              //nolint:revive
+	AttrReverse            //nolint:revive
+	AttrConceal            //nolint:revive
+	AttrStrikethrough      //nolint:revive
 )
 
 // Color represents a terminal color. Negative values mean "default".

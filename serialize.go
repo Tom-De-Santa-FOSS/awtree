@@ -29,7 +29,7 @@ func Serialize(m *ElementMap) string {
 }
 
 func serializeElement(el Element) string {
-	typeName := shortType(el.Type)
+	typeName := el.Type.ShortString()
 	focus := ""
 	if el.Focused {
 		focus = "*"
@@ -45,27 +45,4 @@ func serializeElement(el Element) string {
 	return fmt.Sprintf("[%d:%s%s:\"%s\" %d,%d%s]",
 		el.ID, typeName, focus, el.Label,
 		el.Bounds.Row, el.Bounds.Col, size)
-}
-
-func shortType(t ElementType) string {
-	switch t {
-	case ElementPanel:
-		return "panel"
-	case ElementButton:
-		return "btn"
-	case ElementInput:
-		return "input"
-	case ElementMenuItem:
-		return "item"
-	case ElementStatusBar:
-		return "status"
-	case ElementMenuBar:
-		return "menu"
-	case ElementTab:
-		return "tab"
-	case ElementText:
-		return "text"
-	default:
-		return "?"
-	}
 }

@@ -137,7 +137,10 @@ func extractPanelTitle(g *Grid, row, col, width int) string {
 			continue
 		}
 		if ch == ' ' && inTitle {
-			// Check if there's more title text ahead.
+			// Check if there's more title text ahead, guarding bounds.
+			if c+1 >= col+width-1 {
+				break
+			}
 			next := g.At(row, c+1).Char
 			if boxDrawingHorizontal[next] || boxDrawingCornerTR[next] {
 				break
