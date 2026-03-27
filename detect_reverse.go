@@ -31,7 +31,7 @@ func detectReverseRegions(g *Grid) []Element {
 			}
 
 			elements = append(elements, Element{
-				Type:    ElementMenuItem, // Default; caller may reclassify.
+				Type:    ElementText,
 				Label:   text,
 				Focused: true,
 				Bounds: Rect{

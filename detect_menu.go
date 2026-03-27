@@ -67,8 +67,8 @@ func detectMenuItems(g *Grid) []Element {
 		}
 
 		// Build a set of highlighted rows for focused marking.
-		focusedRows := make(map[int]bool)
-		focusedLabels := make(map[int]string)
+		focusedRows := make([]bool, g.Rows)
+		focusedLabels := make([]string, g.Rows)
 		for _, h := range group {
 			focusedRows[h.row] = true
 			focusedLabels[h.row] = h.label

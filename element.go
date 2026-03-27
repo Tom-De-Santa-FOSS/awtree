@@ -32,6 +32,24 @@ func (t ElementType) String() string {
 	return "unknown"
 }
 
+var elementTypeShortNames = [...]string{
+	"panel",
+	"btn",
+	"input",
+	"item",
+	"status",
+	"menu",
+	"tab",
+	"text",
+}
+
+func (t ElementType) ShortString() string {
+	if int(t) < len(elementTypeShortNames) {
+		return elementTypeShortNames[t]
+	}
+	return "?"
+}
+
 // Rect defines a rectangular region on the terminal grid.
 type Rect struct {
 	Row    int `json:"row"`
