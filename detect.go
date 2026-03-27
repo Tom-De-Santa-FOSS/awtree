@@ -7,72 +7,51 @@ func Detect(g *Grid) *ElementMap {
 		return &ElementMap{}
 	}
 
-	var elements []Element
-	nextID := 1
+	var b elementBuilder
 
-	// Detection order matches confidence ranking:
-	// 1. Panels (box-drawing boundaries)
-	// 2. Reverse-video regions (focused/selected elements)
-	// 3. Status/menu bars (edge rows with distinct styling)
-	// 4. Buttons (bracketed text patterns)
-	// 5. Menu items (repeated vertical structure with highlight)
-	// 6. Input fields (cursor-adjacent editable areas)
-
+	// Detection order matches confidence ranking.
 	panels := detectPanels(g)
-	for i := range panels {
-		panels[i].ID = nextID
-		nextID++
-	}
-	elements = append(elements, panels...)
+	b.addAll(panels)
 
-	buttons := detectButtons(g)
-	for i := range buttons {
-		buttons[i].ID = nextID
-		nextID++
-	}
-	elements = append(elements, buttons...)
-
+	b.addAll(detectButtons(g))
 	menuItems := detectMenuItems(g)
-	for i := range menuItems {
-		menuItems[i].ID = nextID
-		nextID++
-	}
-	elements = append(elements, menuItems...)
-
-	inputs := detectInputs(g)
-	for i := range inputs {
-		inputs[i].ID = nextID
-		nextID++
-	}
-	elements = append(elements, inputs...)
+	b.addAll(menuItems)
+	b.addAll(detectInputs(g))
 
 	tabs := detectTabs(g)
-	for i := range tabs {
-		tabs[i].ID = nextID
-		nextID++
-	}
-	elements = append(elements, tabs...)
+	b.addAll(tabs)
 
-	// Standalone reverse regions (not part of a menu or tab bar).
-	reverseRegions := detectReverseRegions(g)
-	for i := range reverseRegions {
-		// Skip if already covered by a menu item at same position.
-		if overlapsAny(reverseRegions[i], menuItems) || overlapsAny(reverseRegions[i], tabs) {
-			continue
+	// Standalone reverse regions — skip those already claimed by menus/tabs.
+	for _, r := range detectReverseRegions(g) {
+		if !overlapsAny(r, menuItems) && !overlapsAny(r, tabs) {
+			b.add(r)
 		}
-		reverseRegions[i].ID = nextID
-		nextID++
-		elements = append(elements, reverseRegions[i])
 	}
 
-	statusBars := detectStatusBars(g)
-	for i := range statusBars {
-		statusBars[i].ID = nextID
-		nextID++
-	}
-	elements = append(elements, statusBars...)
+	b.addAll(detectStatusBars(g))
 
-	return &ElementMap{Elements: elements}
+	return &ElementMap{Elements: b.elements}
+}
+
+// elementBuilder assigns sequential IDs and collects elements.
+type elementBuilder struct {
+	elements []Element
+	nextID   int
+}
+
+func (b *elementBuilder) add(el Element) {
+	if b.nextID == 0 {
+		b.nextID = 1
+	}
+	el.ID = b.nextID
+	b.nextID++
+	b.elements = append(b.elements, el)
+}
+
+func (b *elementBuilder) addAll(els []Element) {
+	for _, el := range els {
+		b.add(el)
+	}
 }
 
 func overlapsAny(el Element, others []Element) bool {
