@@ -277,6 +277,92 @@ func TestDetect_InputField_DistinctBackground(t *testing.T) {
 	}
 }
 
+func TestDetect_BracketedNonButton_ArrayNotation(t *testing.T) {
+	g := NewGrid(5, 40)
+	// [0] and [123] should NOT be buttons (start with digit).
+	g.SetText(1, 5, "[0]", DefaultColor, DefaultColor, 0)
+	g.SetText(2, 5, "[123]", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+
+	for _, el := range m.Elements {
+		if el.Type == ElementButton {
+			t.Errorf("false positive button: %q", el.Label)
+		}
+	}
+}
+
+func TestDetect_NestedPanels(t *testing.T) {
+	g := NewGrid(12, 30)
+	// Outer panel.
+	g.Set(0, 0, Cell{Char: '┌'})
+	for c := 1; c < 19; c++ {
+		g.Set(0, c, Cell{Char: '─'})
+	}
+	g.Set(0, 19, Cell{Char: '┐'})
+	for r := 1; r < 9; r++ {
+		g.Set(r, 0, Cell{Char: '│'})
+		g.Set(r, 19, Cell{Char: '│'})
+	}
+	g.Set(9, 0, Cell{Char: '└'})
+	for c := 1; c < 19; c++ {
+		g.Set(9, c, Cell{Char: '─'})
+	}
+	g.Set(9, 19, Cell{Char: '┘'})
+
+	// Inner panel.
+	g.Set(2, 2, Cell{Char: '┌'})
+	for c := 3; c < 9; c++ {
+		g.Set(2, c, Cell{Char: '─'})
+	}
+	g.Set(2, 9, Cell{Char: '┐'})
+	for r := 3; r < 6; r++ {
+		g.Set(r, 2, Cell{Char: '│'})
+		g.Set(r, 9, Cell{Char: '│'})
+	}
+	g.Set(6, 2, Cell{Char: '└'})
+	for c := 3; c < 9; c++ {
+		g.Set(6, c, Cell{Char: '─'})
+	}
+	g.Set(6, 9, Cell{Char: '┘'})
+
+	m := Detect(g)
+
+	panelCount := 0
+	for _, el := range m.Elements {
+		if el.Type == ElementPanel {
+			panelCount++
+		}
+	}
+	if panelCount != 2 {
+		t.Errorf("expected 2 panels (nested), got %d", panelCount)
+	}
+}
+
+func TestDetect_MenuBar_TopRowWithBG(t *testing.T) {
+	g := NewGrid(24, 80)
+	// Top row with colored BG → menu bar, not status bar.
+	for c := 0; c < 80; c++ {
+		g.Set(0, c, Cell{Char: ' ', BG: 2})
+	}
+	g.SetText(0, 2, "File  Edit  View  Help", DefaultColor, 2, 0)
+
+	m := Detect(g)
+
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementMenuBar {
+			found = true
+		}
+		if el.Type == ElementStatusBar && el.Bounds.Row == 0 {
+			t.Error("top row should be MenuBar, not StatusBar")
+		}
+	}
+	if !found {
+		t.Fatal("menu bar not detected on top row")
+	}
+}
+
 func TestDetect_SequentialIDs(t *testing.T) {
 	g := NewGrid(10, 40)
 	// Panel.
