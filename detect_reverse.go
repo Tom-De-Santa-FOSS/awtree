@@ -1,4 +1,4 @@
-package termtree
+package awtree
 
 // detectReverseRegions finds contiguous horizontal spans of reverse-video cells.
 // These typically indicate focused/selected elements in TUIs.

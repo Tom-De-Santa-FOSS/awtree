@@ -1,4 +1,4 @@
-package termtree
+package awtree
 
 import "unicode"
 

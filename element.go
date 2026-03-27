@@ -1,4 +1,4 @@
-package termtree
+package awtree
 
 // ElementType classifies a detected TUI element.
 type ElementType int

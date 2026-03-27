@@ -1,4 +1,4 @@
-package termtree
+package awtree
 
 // Attr is a bitmask of cell style attributes.
 type Attr uint16

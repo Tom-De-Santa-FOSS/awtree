@@ -1,4 +1,4 @@
-package termtree
+package awtree
 
 // boxDrawingCornerTL maps top-left corner characters.
 var boxDrawingCornerTL = map[rune]bool{

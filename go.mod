@@ -1,3 +1,3 @@
-module github.com/Tom-De-Santa-FOSS/termtree
+module github.com/Tom-De-Santa-FOSS/awtree
 
 go 1.26.1

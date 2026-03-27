@@ -1,4 +1,4 @@
-package termtree
+package awtree
 
 // detectStatusBars finds rows at the top or bottom of the screen where a
 // majority of cells share a distinct background color, indicating a

@@ -1,4 +1,4 @@
-package termtree
+package awtree
 
 // Detect analyzes a styled terminal grid and returns detected UI elements.
 // Elements are assigned sequential IDs starting from 1.
