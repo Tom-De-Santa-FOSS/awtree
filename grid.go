@@ -63,7 +63,9 @@ func (g *Grid) Set(row, col int, c Cell) {
 
 // SetText writes a plain string at (row, col) with the given attributes.
 func (g *Grid) SetText(row, col int, text string, fg, bg Color, attrs Attr) {
-	for i, ch := range text {
+	i := 0
+	for _, ch := range text {
 		g.Set(row, col+i, Cell{Char: ch, FG: fg, BG: bg, Attrs: attrs})
+		i++
 	}
 }

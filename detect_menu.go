@@ -37,46 +37,82 @@ func detectMenuItems(g *Grid) []Element {
 		}
 	}
 
+	// Group highlighted regions by (col, width) to avoid scanning siblings
+	// multiple times when several highlights share the same column range.
+	type colKey struct{ col, width int }
+	groups := make(map[colKey][]region)
+	var groupOrder []colKey
+	for _, h := range highlighted {
+		k := colKey{h.col, h.width}
+		if _, exists := groups[k]; !exists {
+			groupOrder = append(groupOrder, k)
+		}
+		groups[k] = append(groups[k], h)
+	}
+
 	var elements []Element
 
-	for _, h := range highlighted {
-		// Look for sibling lines above and below with text at the same column range.
-		siblings := []Element{{
-			Type:    ElementMenuItem,
-			Label:   h.label,
-			Focused: true,
-			Bounds:  Rect{Row: h.row, Col: h.col, Width: h.width, Height: 1},
-		}}
+	for _, k := range groupOrder {
+		group := groups[k]
 
-		// Scan upward.
-		for r := h.row - 1; r >= 0; r-- {
-			label := extractLineText(g, r, h.col, h.width)
+		// Find the extent of all highlights in this column range.
+		minRow, maxRow := group[0].row, group[0].row
+		for _, h := range group[1:] {
+			if h.row < minRow {
+				minRow = h.row
+			}
+			if h.row > maxRow {
+				maxRow = h.row
+			}
+		}
+
+		// Build a set of highlighted rows for focused marking.
+		focusedRows := make(map[int]bool)
+		focusedLabels := make(map[int]string)
+		for _, h := range group {
+			focusedRows[h.row] = true
+			focusedLabels[h.row] = h.label
+		}
+
+		// Scan upward from the topmost highlight.
+		topRow := minRow
+		for r := minRow - 1; r >= 0; r-- {
+			label := extractLineText(g, r, k.col, k.width)
 			if label == "" {
 				break
 			}
-			siblings = append(siblings, Element{
-				Type:   ElementMenuItem,
-				Label:  label,
-				Bounds: Rect{Row: r, Col: h.col, Width: h.width, Height: 1},
-			})
+			topRow = r
 		}
 
-		// Scan downward.
-		for r := h.row + 1; r < g.Rows; r++ {
-			label := extractLineText(g, r, h.col, h.width)
+		// Scan downward from the bottommost highlight.
+		bottomRow := maxRow
+		for r := maxRow + 1; r < g.Rows; r++ {
+			label := extractLineText(g, r, k.col, k.width)
 			if label == "" {
 				break
 			}
-			siblings = append(siblings, Element{
-				Type:   ElementMenuItem,
-				Label:  label,
-				Bounds: Rect{Row: r, Col: h.col, Width: h.width, Height: 1},
-			})
+			bottomRow = r
 		}
 
-		// Only emit as menu items if there are siblings (>1 item).
-		if len(siblings) > 1 {
-			elements = append(elements, siblings...)
+		// Only emit as menu items if there are multiple items.
+		count := bottomRow - topRow + 1
+		if count < 2 {
+			continue
+		}
+
+		for r := topRow; r <= bottomRow; r++ {
+			label := ""
+			if focusedRows[r] {
+				label = focusedLabels[r]
+			} else {
+				label = extractLineText(g, r, k.col, k.width)
+			}
+			elements = append(elements, Element{
+				Type:    ElementMenuItem,
+				Label:   label,
+				Focused: focusedRows[r],
+				Bounds:  Rect{Row: r, Col: k.col, Width: k.width, Height: 1},
+			})
 		}
 	}
 

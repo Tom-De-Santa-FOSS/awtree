@@ -33,10 +33,13 @@ func findUnderlinedSpans(g *Grid, row int) []Element {
 
 		startCol := col
 		var label []rune
-		for col < g.Cols && g.At(row, col).Attrs&AttrUnderline != 0 {
-			ch := g.At(row, col).Char
-			if ch != 0 && ch != '_' {
-				label = append(label, ch)
+		for col < g.Cols {
+			c := g.At(row, col)
+			if c.Attrs&AttrUnderline == 0 {
+				break
+			}
+			if c.Char != 0 && c.Char != '_' {
+				label = append(label, c.Char)
 			}
 			col++
 		}
@@ -81,10 +84,13 @@ func findDistinctBGSpans(g *Grid, row int) []Element {
 		bg := cell.BG
 		startCol := col
 		var label []rune
-		for col < g.Cols && g.At(row, col).BG == bg && g.At(row, col).Attrs&AttrReverse == 0 {
-			ch := g.At(row, col).Char
-			if ch != 0 {
-				label = append(label, ch)
+		for col < g.Cols {
+			c := g.At(row, col)
+			if c.BG != bg || c.Attrs&AttrReverse != 0 {
+				break
+			}
+			if c.Char != 0 {
+				label = append(label, c.Char)
 			}
 			col++
 		}
@@ -102,7 +108,7 @@ func findDistinctBGSpans(g *Grid, row int) []Element {
 		}
 
 		// Skip if it spans most of the row (likely a bar, not an input).
-		if width > g.Cols*60/100 {
+		if width > g.Cols*majorityThresholdPct/100 {
 			continue
 		}
 

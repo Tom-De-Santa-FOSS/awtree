@@ -1,6 +1,9 @@
 package awtree
 
-import "unicode"
+import (
+	"unicode"
+	"unicode/utf8"
+)
 
 // buttonPairs defines bracket pairs that indicate buttons.
 var buttonPairs = [][2]rune{
@@ -33,7 +36,7 @@ func detectButtons(g *Grid) []Element {
 // traceButton attempts to find a closing bracket and extract the label.
 func traceButton(g *Grid, row, col int, open, close rune) (Element, bool) {
 	var label []rune
-	maxWidth := 30 // Buttons shouldn't be wider than this.
+	maxWidth := maxButtonWidth
 
 	for c := col + 1; c < g.Cols && c < col+maxWidth; c++ {
 		ch := g.At(row, c).Char
@@ -69,16 +72,16 @@ func traceButton(g *Grid, row, col int, open, close rune) (Element, bool) {
 // isButtonLabel validates that text looks like a button label:
 // short, starts with a letter, mostly printable.
 func isButtonLabel(text string) bool {
-	if len(text) == 0 || len(text) > 20 {
+	if len(text) == 0 || len(text) > maxButtonLabelLen {
 		return false
 	}
 
-	runes := []rune(text)
-	if !unicode.IsLetter(runes[0]) && !unicode.IsUpper(runes[0]) {
+	r, _ := utf8.DecodeRuneInString(text)
+	if !unicode.IsLetter(r) {
 		return false
 	}
 
-	for _, r := range runes {
+	for _, r := range text {
 		if !unicode.IsPrint(r) {
 			return false
 		}
