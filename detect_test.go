@@ -431,6 +431,37 @@ func TestDetect_RealisticTUI(t *testing.T) {
 	}
 }
 
+func TestDetect_MenuItems_NoDuplicatesWithMultipleHighlights(t *testing.T) {
+	g := NewGrid(10, 30)
+	// Two highlighted items in same column range with shared siblings.
+	g.SetText(2, 2, "  Open File  ", DefaultColor, DefaultColor, 0)
+	g.SetText(3, 2, "  Save File  ", DefaultColor, DefaultColor, AttrReverse)
+	g.SetText(4, 2, "  Close All  ", DefaultColor, DefaultColor, AttrReverse)
+	g.SetText(5, 2, "  Quit       ", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+
+	var menuItems []Element
+	for _, el := range m.Elements {
+		if el.Type == ElementMenuItem {
+			menuItems = append(menuItems, el)
+		}
+	}
+
+	if len(menuItems) != 4 {
+		t.Fatalf("expected exactly 4 menu items, got %d", len(menuItems))
+	}
+
+	// Check no duplicate rows.
+	seen := make(map[int]bool)
+	for _, el := range menuItems {
+		if seen[el.Bounds.Row] {
+			t.Errorf("duplicate menu item at row %d", el.Bounds.Row)
+		}
+		seen[el.Bounds.Row] = true
+	}
+}
+
 func TestDetect_SequentialIDs(t *testing.T) {
 	g := NewGrid(10, 40)
 	// Panel.
