@@ -39,11 +39,18 @@ func Detect(g *Grid) *ElementMap {
 	}
 	elements = append(elements, menuItems...)
 
-	// Standalone reverse regions (not part of a menu).
+	tabs := detectTabs(g)
+	for i := range tabs {
+		tabs[i].ID = nextID
+		nextID++
+	}
+	elements = append(elements, tabs...)
+
+	// Standalone reverse regions (not part of a menu or tab bar).
 	reverseRegions := detectReverseRegions(g)
 	for i := range reverseRegions {
 		// Skip if already covered by a menu item at same position.
-		if overlapsAny(reverseRegions[i], menuItems) {
+		if overlapsAny(reverseRegions[i], menuItems) || overlapsAny(reverseRegions[i], tabs) {
 			continue
 		}
 		reverseRegions[i].ID = nextID
