@@ -181,8 +181,8 @@ func TestDetect_MenuItems_VerticalListWithOneHighlighted(t *testing.T) {
 		}
 	}
 
-	if len(menuItems) < 3 {
-		t.Fatalf("expected 3 menu items, got %d", len(menuItems))
+	if len(menuItems) != 3 {
+		t.Fatalf("expected exactly 3 menu items, got %d", len(menuItems))
 	}
 
 	focusCount := 0
@@ -509,6 +509,98 @@ func TestIsButtonLabel(t *testing.T) {
 		got := isButtonLabel(tt.input)
 		if got != tt.want {
 			t.Errorf("isButtonLabel(%q) = %v, want %v", tt.input, got, tt.want)
+		}
+	}
+}
+
+func TestTrimSpaces(t *testing.T) {
+	tests := []struct {
+		input []rune
+		want  string
+	}{
+		{[]rune("  hello  "), "hello"},
+		{[]rune{}, ""},
+		{[]rune("   "), ""},
+		{[]rune("hello"), "hello"},
+		{[]rune("  hello"), "hello"},
+		{[]rune("hello  "), "hello"},
+	}
+	for _, tt := range tests {
+		got := trimSpaces(tt.input)
+		if got != tt.want {
+			t.Errorf("trimSpaces(%q) = %q, want %q", string(tt.input), got, tt.want)
+		}
+	}
+}
+
+func TestExtractLineText(t *testing.T) {
+	g := NewGrid(5, 20)
+	g.SetText(2, 5, "Hello", DefaultColor, DefaultColor, 0)
+
+	got := extractLineText(g, 2, 5, 5)
+	if got != "Hello" {
+		t.Errorf("extractLineText = %q, want %q", got, "Hello")
+	}
+
+	// Blank region returns empty string.
+	got = extractLineText(g, 3, 5, 5)
+	if got != "" {
+		t.Errorf("extractLineText blank = %q, want empty", got)
+	}
+}
+
+func TestDetect_FirstElementIDIsOne(t *testing.T) {
+	g := NewGrid(5, 20)
+	g.SetText(2, 5, "[OK]", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+
+	if len(m.Elements) == 0 {
+		t.Fatal("expected at least one element")
+	}
+	if m.Elements[0].ID != 1 {
+		t.Errorf("first element ID = %d, want 1", m.Elements[0].ID)
+	}
+}
+
+func TestDetect_InputField_TooShortUnderlinedSpan_NotDetected(t *testing.T) {
+	g := NewGrid(5, 20)
+	// Width=2, below minimum threshold of 3.
+	g.Set(2, 5, Cell{Char: '_', Attrs: AttrUnderline})
+	g.Set(2, 6, Cell{Char: '_', Attrs: AttrUnderline})
+
+	m := Detect(g)
+	for _, el := range m.Elements {
+		if el.Type == ElementInput {
+			t.Error("short underlined span should not be detected as input")
+		}
+	}
+}
+
+func TestDetect_InputField_WideDistinctBGSpan_NotDetectedAsInput(t *testing.T) {
+	g := NewGrid(10, 20) // 20 cols, threshold is 12
+	for c := 0; c < 16; c++ {
+		g.Set(5, c, Cell{Char: ' ', BG: 7})
+	}
+
+	m := Detect(g)
+	for _, el := range m.Elements {
+		if el.Type == ElementInput {
+			t.Error("wide BG span should not be classified as input")
+		}
+	}
+}
+
+func TestDetect_RowWithTwoActiveSegments_NotDetectedAsTabs(t *testing.T) {
+	g := NewGrid(5, 40)
+	g.SetText(0, 0, " Files ", DefaultColor, 4, AttrReverse)
+	g.SetText(0, 10, " Edit ", DefaultColor, 4, AttrReverse)
+	g.SetText(0, 20, " View ", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+	for _, el := range m.Elements {
+		if el.Type == ElementTab {
+			t.Error("row with 2 active segments should not produce tabs")
 		}
 	}
 }
