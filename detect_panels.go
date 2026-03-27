@@ -4,6 +4,7 @@ package awtree
 var boxDrawingCornerTL = map[rune]bool{
 	'┌': true, '╔': true, '╒': true, '╓': true,
 	'┏': true, '┍': true, '┎': true,
+	'╭': true, // rounded
 	'+': true, // ASCII fallback
 }
 
@@ -11,6 +12,7 @@ var boxDrawingCornerTL = map[rune]bool{
 var boxDrawingCornerTR = map[rune]bool{
 	'┐': true, '╗': true, '╕': true, '╖': true,
 	'┓': true, '┑': true, '┒': true,
+	'╮': true, // rounded
 	'+': true,
 }
 
@@ -18,6 +20,7 @@ var boxDrawingCornerTR = map[rune]bool{
 var boxDrawingCornerBL = map[rune]bool{
 	'└': true, '╚': true, '╘': true, '╙': true,
 	'┗': true, '┕': true, '┖': true,
+	'╰': true, // rounded
 	'+': true,
 }
 
@@ -25,6 +28,7 @@ var boxDrawingCornerBL = map[rune]bool{
 var boxDrawingCornerBR = map[rune]bool{
 	'┘': true, '╝': true, '╛': true, '╜': true,
 	'┛': true, '┙': true, '┚': true,
+	'╯': true, // rounded
 	'+': true,
 }
 
