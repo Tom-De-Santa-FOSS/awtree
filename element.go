@@ -65,7 +65,7 @@ type Element struct {
 	Label    string      `json:"label"`
 	Bounds   Rect        `json:"bounds"`
 	Focused  bool        `json:"focused"`
-	Children []int       `json:"children,omitempty"`
+	Children []int       `json:"children,omitempty"` // IDs of contained elements; populated by BuildTree
 }
 
 // ElementMap is the result of detecting elements on a styled grid.
