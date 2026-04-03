@@ -25,10 +25,17 @@ func Detect(g *Grid) *ElementMap {
 	panels := detectPanels(g)
 	b.addAll(panels)
 
-	b.addAll(detectButtons(g))
+	b.addAll(detectTables(g))
+	buttons := detectButtons(g)
+	b.addAll(buttons)
+	b.addAll(detectDialogs(g, panels, buttons))
+	b.addAll(detectCheckboxes(g))
 	menuItems := detectMenuItems(g)
 	b.addAll(menuItems)
 	b.addAll(detectInputs(g))
+	b.addAll(detectProgressBars(g))
+	b.addAll(detectSeparators(g))
+	b.addAll(detectScrollIndicators(g))
 
 	tabs := detectTabs(g)
 	b.addAll(tabs)
@@ -40,6 +47,7 @@ func Detect(g *Grid) *ElementMap {
 		}
 	}
 
+	b.addAll(detectBreadcrumbs(g))
 	b.addAll(detectStatusBars(g))
 
 	return &ElementMap{Elements: b.elements}
