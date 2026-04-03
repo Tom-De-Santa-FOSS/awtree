@@ -18,6 +18,7 @@ const (
 	ElementSeparator                    // Horizontal separator/divider line
 	ElementDialog                       // Centered panel with buttons (modal)
 	ElementScrollIndicator              // Scroll arrows or block scrollbar
+	ElementBreadcrumb                   // Path-like breadcrumb trail
 )
 
 var elementTypeNames = [...]string{
@@ -35,6 +36,7 @@ var elementTypeNames = [...]string{
 	"separator",
 	"dialog",
 	"scroll_indicator",
+	"breadcrumb",
 }
 
 func (t ElementType) String() string {
@@ -59,6 +61,7 @@ var elementTypeShortNames = [...]string{
 	"sep",
 	"dlg",
 	"scroll",
+	"crumb",
 }
 
 func (t ElementType) ShortString() string {

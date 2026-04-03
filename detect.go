@@ -47,6 +47,7 @@ func Detect(g *Grid) *ElementMap {
 		}
 	}
 
+	b.addAll(detectBreadcrumbs(g))
 	b.addAll(detectStatusBars(g))
 
 	return &ElementMap{Elements: b.elements}
