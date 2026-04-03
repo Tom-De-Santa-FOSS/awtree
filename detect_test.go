@@ -506,7 +506,7 @@ func TestIsButtonLabel(t *testing.T) {
 		{string([]rune{0x01}), false}, // non-printable
 	}
 	for _, tt := range tests {
-		got := isButtonLabel(tt.input)
+		got := isButtonLabel(tt.input, DefaultDetectConfig().MaxButtonLabelLen)
 		if got != tt.want {
 			t.Errorf("isButtonLabel(%q) = %v, want %v", tt.input, got, tt.want)
 		}
