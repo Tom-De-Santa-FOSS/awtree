@@ -667,3 +667,302 @@ func TestDetect_SequentialIDs(t *testing.T) {
 		ids[el.ID] = true
 	}
 }
+
+// --- Checkbox/Radio tests ---
+
+func TestDetect_Checkbox_Unicode(t *testing.T) {
+	g := NewGrid(5, 40)
+	g.Set(1, 2, Cell{Char: '☐', FG: DefaultColor, BG: DefaultColor})
+	g.SetText(1, 3, " Accept terms", DefaultColor, DefaultColor, 0)
+	g.Set(2, 2, Cell{Char: '☑', FG: DefaultColor, BG: DefaultColor})
+	g.SetText(2, 3, " Send newsletter", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+	var checkboxes []Element
+	for _, el := range m.Elements {
+		if el.Type == ElementCheckbox {
+			checkboxes = append(checkboxes, el)
+		}
+	}
+	if len(checkboxes) != 2 {
+		t.Fatalf("expected 2 checkboxes, got %d", len(checkboxes))
+	}
+	if checkboxes[0].Label != "☐ Accept terms" {
+		t.Errorf("checkbox[0] label = %q, want %q", checkboxes[0].Label, "☐ Accept terms")
+	}
+	if checkboxes[1].Label != "☑ Send newsletter" {
+		t.Errorf("checkbox[1] label = %q, want %q", checkboxes[1].Label, "☑ Send newsletter")
+	}
+}
+
+func TestDetect_Checkbox_ASCII(t *testing.T) {
+	g := NewGrid(5, 40)
+	g.SetText(0, 0, "[x] Enable logging", DefaultColor, DefaultColor, 0)
+	g.SetText(1, 0, "[ ] Verbose mode", DefaultColor, DefaultColor, 0)
+	g.SetText(2, 0, "[X] Dark theme", DefaultColor, DefaultColor, 0)
+	g.SetText(3, 0, "[*] Auto-save", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+	var checkboxes []Element
+	for _, el := range m.Elements {
+		if el.Type == ElementCheckbox {
+			checkboxes = append(checkboxes, el)
+		}
+	}
+	if len(checkboxes) != 4 {
+		t.Fatalf("expected 4 checkboxes, got %d", len(checkboxes))
+	}
+	wantLabels := []string{"[x] Enable logging", "[ ] Verbose mode", "[X] Dark theme", "[*] Auto-save"}
+	for i, want := range wantLabels {
+		if checkboxes[i].Label != want {
+			t.Errorf("checkbox[%d] label = %q, want %q", i, checkboxes[i].Label, want)
+		}
+	}
+}
+
+func TestDetect_Radio_ASCII(t *testing.T) {
+	g := NewGrid(5, 40)
+	g.SetText(0, 0, "( ) Option A", DefaultColor, DefaultColor, 0)
+	g.SetText(1, 0, "(x) Option B", DefaultColor, DefaultColor, 0)
+	g.SetText(2, 0, "(*) Option C", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+	var checkboxes []Element
+	for _, el := range m.Elements {
+		if el.Type == ElementCheckbox {
+			checkboxes = append(checkboxes, el)
+		}
+	}
+	if len(checkboxes) != 3 {
+		t.Fatalf("expected 3 radio buttons, got %d", len(checkboxes))
+	}
+	wantLabels := []string{"( ) Option A", "(x) Option B", "(*) Option C"}
+	for i, want := range wantLabels {
+		if checkboxes[i].Label != want {
+			t.Errorf("radio[%d] label = %q, want %q", i, checkboxes[i].Label, want)
+		}
+	}
+}
+
+func TestDetect_Checkbox_Focused(t *testing.T) {
+	g := NewGrid(5, 40)
+	g.Set(1, 2, Cell{Char: '☑', FG: DefaultColor, BG: DefaultColor, Attrs: AttrReverse})
+	g.SetText(1, 3, " Agree", DefaultColor, DefaultColor, AttrReverse)
+	g.SetText(2, 2, "[x]", DefaultColor, DefaultColor, AttrReverse)
+	g.SetText(2, 5, " Confirm", DefaultColor, DefaultColor, AttrReverse)
+
+	m := Detect(g)
+	var checkboxes []Element
+	for _, el := range m.Elements {
+		if el.Type == ElementCheckbox {
+			checkboxes = append(checkboxes, el)
+		}
+	}
+	if len(checkboxes) != 2 {
+		t.Fatalf("expected 2 checkboxes, got %d", len(checkboxes))
+	}
+	for i, cb := range checkboxes {
+		if !cb.Focused {
+			t.Errorf("checkbox[%d] should be focused", i)
+		}
+	}
+}
+
+// --- ProgressBar tests ---
+
+func TestDetect_ProgressBar_BlockChars(t *testing.T) {
+	g := NewGrid(5, 40)
+	for c := 5; c < 9; c++ {
+		g.Set(2, c, Cell{Char: '█'})
+	}
+	for c := 9; c < 13; c++ {
+		g.Set(2, c, Cell{Char: '░'})
+	}
+
+	m := Detect(g)
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementProgressBar {
+			found = true
+			if el.Bounds.Row != 2 || el.Bounds.Col != 5 || el.Bounds.Width != 8 || el.Bounds.Height != 1 {
+				t.Errorf("bounds = %+v, want {Row:2 Col:5 Width:8 Height:1}", el.Bounds)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("block character progress bar not detected")
+	}
+}
+
+func TestDetect_ProgressBar_ASCII(t *testing.T) {
+	g := NewGrid(5, 40)
+	g.SetText(1, 3, "[====    ]", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementProgressBar {
+			found = true
+			if el.Bounds.Row != 1 || el.Bounds.Col != 3 || el.Bounds.Width != 10 || el.Bounds.Height != 1 {
+				t.Errorf("bounds = %+v, want {Row:1 Col:3 Width:10 Height:1}", el.Bounds)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("ASCII progress bar not detected")
+	}
+}
+
+func TestDetect_ProgressBar_WithPercentage(t *testing.T) {
+	g := NewGrid(5, 40)
+	for c := 5; c < 10; c++ {
+		g.Set(2, c, Cell{Char: '█'})
+	}
+	for c := 10; c < 15; c++ {
+		g.Set(2, c, Cell{Char: '░'})
+	}
+	g.SetText(2, 16, "45%", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementProgressBar {
+			found = true
+			if el.Label != "45%" {
+				t.Errorf("label = %q, want %q", el.Label, "45%")
+			}
+		}
+	}
+	if !found {
+		t.Fatal("progress bar with percentage not detected")
+	}
+}
+
+// --- Table tests ---
+
+func TestDetect_Table_Simple(t *testing.T) {
+	g := NewGrid(5, 20)
+	g.SetText(0, 0, " Alice ", DefaultColor, DefaultColor, 0)
+	g.Set(0, 7, Cell{Char: '│'})
+	g.SetText(0, 8, " 30", DefaultColor, DefaultColor, 0)
+	g.SetText(1, 0, " Bob   ", DefaultColor, DefaultColor, 0)
+	g.Set(1, 7, Cell{Char: '│'})
+	g.SetText(1, 8, " 25", DefaultColor, DefaultColor, 0)
+	g.SetText(2, 0, " Carol ", DefaultColor, DefaultColor, 0)
+	g.Set(2, 7, Cell{Char: '│'})
+	g.SetText(2, 8, " 40", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementTable {
+			found = true
+			if el.Label != "3x2" {
+				t.Errorf("table label = %q, want %q", el.Label, "3x2")
+			}
+			if el.Bounds.Height != 3 {
+				t.Errorf("table height = %d, want 3", el.Bounds.Height)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("no table detected")
+	}
+}
+
+func TestDetect_Table_WithHeader(t *testing.T) {
+	g := NewGrid(6, 20)
+	g.SetText(0, 0, " Name  ", DefaultColor, DefaultColor, AttrBold)
+	g.Set(0, 7, Cell{Char: '│', Attrs: AttrBold})
+	g.SetText(0, 8, " Age", DefaultColor, DefaultColor, AttrBold)
+	for c := 0; c < 14; c++ {
+		g.Set(1, c, Cell{Char: '─'})
+	}
+	g.Set(1, 7, Cell{Char: '┼'})
+	g.SetText(2, 0, " Alice ", DefaultColor, DefaultColor, 0)
+	g.Set(2, 7, Cell{Char: '│'})
+	g.SetText(2, 8, " 30", DefaultColor, DefaultColor, 0)
+	g.SetText(3, 0, " Bob   ", DefaultColor, DefaultColor, 0)
+	g.Set(3, 7, Cell{Char: '│'})
+	g.SetText(3, 8, " 25", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementTable {
+			found = true
+			if el.Label != "3x2" {
+				t.Errorf("table label = %q, want %q", el.Label, "3x2")
+			}
+			if el.Bounds.Height != 4 {
+				t.Errorf("table height = %d, want 4", el.Bounds.Height)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("no table with header detected")
+	}
+}
+
+func TestDetect_Table_ASCII(t *testing.T) {
+	g := NewGrid(7, 25)
+	g.SetText(0, 0, " Name  ", DefaultColor, DefaultColor, 0)
+	g.Set(0, 7, Cell{Char: '|'})
+	g.SetText(0, 8, " Age ", DefaultColor, DefaultColor, 0)
+	g.Set(0, 13, Cell{Char: '|'})
+	g.SetText(0, 14, " City", DefaultColor, DefaultColor, 0)
+	for c := 0; c < 20; c++ {
+		g.Set(1, c, Cell{Char: '-'})
+	}
+	g.Set(1, 7, Cell{Char: '+'})
+	g.Set(1, 13, Cell{Char: '+'})
+	for r := 2; r <= 4; r++ {
+		g.SetText(r, 0, " Name  ", DefaultColor, DefaultColor, 0)
+		g.Set(r, 7, Cell{Char: '|'})
+		g.SetText(r, 8, " val ", DefaultColor, DefaultColor, 0)
+		g.Set(r, 13, Cell{Char: '|'})
+		g.SetText(r, 14, " City", DefaultColor, DefaultColor, 0)
+	}
+
+	m := Detect(g)
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementTable {
+			found = true
+			if el.Label != "4x3" {
+				t.Errorf("table label = %q, want %q", el.Label, "4x3")
+			}
+			if el.Bounds.Height != 5 {
+				t.Errorf("table height = %d, want 5", el.Bounds.Height)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("no ASCII table detected")
+	}
+}
+
+func TestDetect_Table_PanelNotFalsePositive(t *testing.T) {
+	g := NewGrid(6, 12)
+	g.Set(0, 0, Cell{Char: '┌'})
+	for c := 1; c < 9; c++ {
+		g.Set(0, c, Cell{Char: '─'})
+	}
+	g.Set(0, 9, Cell{Char: '┐'})
+	for r := 1; r < 4; r++ {
+		g.Set(r, 0, Cell{Char: '│'})
+		g.Set(r, 9, Cell{Char: '│'})
+	}
+	g.Set(4, 0, Cell{Char: '└'})
+	for c := 1; c < 9; c++ {
+		g.Set(4, c, Cell{Char: '─'})
+	}
+	g.Set(4, 9, Cell{Char: '┘'})
+
+	m := Detect(g)
+	for _, el := range m.Elements {
+		if el.Type == ElementTable {
+			t.Errorf("panel falsely detected as table: %+v", el)
+		}
+	}
+}

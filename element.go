@@ -12,6 +12,9 @@ const (
 	ElementMenuBar                      // Horizontal menu at top
 	ElementTab                          // Tab-bar label
 	ElementText                         // Generic styled text region
+	ElementCheckbox                     // Checkbox or radio button
+	ElementProgressBar                  // Progress bar (block or ASCII)
+	ElementTable                        // Tabular data with column separators
 )
 
 var elementTypeNames = [...]string{
@@ -23,6 +26,9 @@ var elementTypeNames = [...]string{
 	"menu_bar",
 	"tab",
 	"text",
+	"checkbox",
+	"progress_bar",
+	"table",
 }
 
 func (t ElementType) String() string {
@@ -41,6 +47,9 @@ var elementTypeShortNames = [...]string{
 	"menu",
 	"tab",
 	"text",
+	"chk",
+	"prog",
+	"tbl",
 }
 
 func (t ElementType) ShortString() string {
