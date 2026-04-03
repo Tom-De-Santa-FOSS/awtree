@@ -966,3 +966,236 @@ func TestDetect_Table_PanelNotFalsePositive(t *testing.T) {
 		}
 	}
 }
+
+// --- Separator tests ---
+
+func TestDetect_Separator_BasicDash(t *testing.T) {
+	g := NewGrid(5, 20)
+	for c := 3; c < 13; c++ {
+		g.Set(2, c, Cell{Char: '─'})
+	}
+
+	m := Detect(g)
+
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementSeparator {
+			found = true
+			if el.Bounds.Row != 2 {
+				t.Errorf("separator row = %d, want 2", el.Bounds.Row)
+			}
+			if el.Bounds.Col != 3 {
+				t.Errorf("separator col = %d, want 3", el.Bounds.Col)
+			}
+			if el.Bounds.Width != 10 {
+				t.Errorf("separator width = %d, want 10", el.Bounds.Width)
+			}
+			if el.Bounds.Height != 1 {
+				t.Errorf("separator height = %d, want 1", el.Bounds.Height)
+			}
+			if el.Label != "" {
+				t.Errorf("separator label = %q, want empty", el.Label)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("separator not detected")
+	}
+}
+
+func TestDetect_Separator_ShortDash(t *testing.T) {
+	g := NewGrid(5, 20)
+	g.Set(2, 5, Cell{Char: '-'})
+	g.Set(2, 6, Cell{Char: '-'})
+
+	m := Detect(g)
+
+	for _, el := range m.Elements {
+		if el.Type == ElementSeparator {
+			t.Error("2-char dash run should not be detected as separator")
+		}
+	}
+}
+
+func TestDetect_Separator_PanelBorderNotSeparator(t *testing.T) {
+	g := NewGrid(5, 20)
+	g.Set(2, 2, Cell{Char: '┌'})
+	for c := 3; c < 13; c++ {
+		g.Set(2, c, Cell{Char: '─'})
+	}
+	g.Set(2, 13, Cell{Char: '┐'})
+
+	m := Detect(g)
+
+	for _, el := range m.Elements {
+		if el.Type == ElementSeparator {
+			t.Error("panel border row should not be detected as separator")
+		}
+	}
+}
+
+// --- Dialog tests ---
+
+func TestDetect_Dialog_CenteredPanelWithButton(t *testing.T) {
+	g := NewGrid(24, 80)
+	topRow, botRow := 8, 14
+	leftCol, rightCol := 30, 50
+	g.Set(topRow, leftCol, Cell{Char: '┌'})
+	g.Set(topRow, rightCol, Cell{Char: '┐'})
+	g.Set(botRow, leftCol, Cell{Char: '└'})
+	g.Set(botRow, rightCol, Cell{Char: '┘'})
+	for c := leftCol + 1; c < rightCol; c++ {
+		g.Set(topRow, c, Cell{Char: '─'})
+		g.Set(botRow, c, Cell{Char: '─'})
+	}
+	for r := topRow + 1; r < botRow; r++ {
+		g.Set(r, leftCol, Cell{Char: '│'})
+		g.Set(r, rightCol, Cell{Char: '│'})
+	}
+	g.SetText(topRow, leftCol+2, "─ Confirm ─", DefaultColor, DefaultColor, 0)
+	g.SetText(12, 38, "[OK]", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementDialog {
+			found = true
+			if el.Bounds.Row != topRow || el.Bounds.Col != leftCol {
+				t.Errorf("dialog bounds start = (%d,%d), want (%d,%d)", el.Bounds.Row, el.Bounds.Col, topRow, leftCol)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("dialog not detected for centered panel with button")
+	}
+}
+
+func TestDetect_Dialog_CenteredPanelNoButtons(t *testing.T) {
+	g := NewGrid(24, 80)
+	topRow, botRow := 8, 14
+	leftCol, rightCol := 30, 50
+	g.Set(topRow, leftCol, Cell{Char: '┌'})
+	g.Set(topRow, rightCol, Cell{Char: '┐'})
+	g.Set(botRow, leftCol, Cell{Char: '└'})
+	g.Set(botRow, rightCol, Cell{Char: '┘'})
+	for c := leftCol + 1; c < rightCol; c++ {
+		g.Set(topRow, c, Cell{Char: '─'})
+		g.Set(botRow, c, Cell{Char: '─'})
+	}
+	for r := topRow + 1; r < botRow; r++ {
+		g.Set(r, leftCol, Cell{Char: '│'})
+		g.Set(r, rightCol, Cell{Char: '│'})
+	}
+	g.SetText(10, 33, "Loading...", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+
+	for _, el := range m.Elements {
+		if el.Type == ElementDialog {
+			t.Fatal("centered panel without buttons should not be detected as dialog")
+		}
+	}
+}
+
+func TestDetect_Dialog_OffCenterPanelNotDialog(t *testing.T) {
+	g := NewGrid(24, 80)
+	topRow, botRow := 8, 14
+	leftCol, rightCol := 0, 20
+	g.Set(topRow, leftCol, Cell{Char: '┌'})
+	g.Set(topRow, rightCol, Cell{Char: '┐'})
+	g.Set(botRow, leftCol, Cell{Char: '└'})
+	g.Set(botRow, rightCol, Cell{Char: '┘'})
+	for c := leftCol + 1; c < rightCol; c++ {
+		g.Set(topRow, c, Cell{Char: '─'})
+		g.Set(botRow, c, Cell{Char: '─'})
+	}
+	for r := topRow + 1; r < botRow; r++ {
+		g.Set(r, leftCol, Cell{Char: '│'})
+		g.Set(r, rightCol, Cell{Char: '│'})
+	}
+	g.SetText(12, 5, "[OK]", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+
+	for _, el := range m.Elements {
+		if el.Type == ElementDialog {
+			t.Fatal("off-center panel should not be detected as dialog")
+		}
+	}
+}
+
+// --- ScrollIndicator tests ---
+
+func TestDetect_ScrollIndicator_ArrowPair(t *testing.T) {
+	g := NewGrid(10, 20)
+	g.Set(0, 10, Cell{Char: '▲'})
+	g.Set(5, 10, Cell{Char: '▼'})
+
+	m := Detect(g)
+
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementScrollIndicator {
+			found = true
+			if el.Bounds.Col != 10 {
+				t.Errorf("scroll indicator col = %d, want 10", el.Bounds.Col)
+			}
+			if el.Bounds.Row != 0 {
+				t.Errorf("scroll indicator row = %d, want 0", el.Bounds.Row)
+			}
+			if el.Bounds.Height != 6 {
+				t.Errorf("scroll indicator height = %d, want 6", el.Bounds.Height)
+			}
+			if el.Bounds.Width != 1 {
+				t.Errorf("scroll indicator width = %d, want 1", el.Bounds.Width)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("scroll indicator (arrow pair) not detected")
+	}
+}
+
+func TestDetect_ScrollIndicator_BlockThumb(t *testing.T) {
+	g := NewGrid(10, 20)
+	g.Set(2, 15, Cell{Char: '█'})
+	g.Set(3, 15, Cell{Char: '█'})
+	g.Set(4, 15, Cell{Char: '█'})
+	g.Set(5, 15, Cell{Char: '█'})
+
+	m := Detect(g)
+
+	found := false
+	for _, el := range m.Elements {
+		if el.Type == ElementScrollIndicator {
+			found = true
+			if el.Bounds.Col != 15 {
+				t.Errorf("scroll indicator col = %d, want 15", el.Bounds.Col)
+			}
+			if el.Bounds.Row != 2 {
+				t.Errorf("scroll indicator row = %d, want 2", el.Bounds.Row)
+			}
+			if el.Bounds.Height != 4 {
+				t.Errorf("scroll indicator height = %d, want 4", el.Bounds.Height)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("scroll indicator (block thumb) not detected")
+	}
+}
+
+func TestDetect_ScrollIndicator_TooShort(t *testing.T) {
+	g := NewGrid(10, 20)
+	g.Set(3, 12, Cell{Char: '█'})
+	g.Set(4, 12, Cell{Char: '█'})
+
+	m := Detect(g)
+
+	for _, el := range m.Elements {
+		if el.Type == ElementScrollIndicator {
+			t.Errorf("short block run (2 chars) should not be detected as scroll indicator")
+		}
+	}
+}

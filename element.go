@@ -15,6 +15,9 @@ const (
 	ElementCheckbox                     // Checkbox or radio button
 	ElementProgressBar                  // Progress bar (block or ASCII)
 	ElementTable                        // Tabular data with column separators
+	ElementSeparator                    // Horizontal separator/divider line
+	ElementDialog                       // Centered panel with buttons (modal)
+	ElementScrollIndicator              // Scroll arrows or block scrollbar
 )
 
 var elementTypeNames = [...]string{
@@ -29,6 +32,9 @@ var elementTypeNames = [...]string{
 	"checkbox",
 	"progress_bar",
 	"table",
+	"separator",
+	"dialog",
+	"scroll_indicator",
 }
 
 func (t ElementType) String() string {
@@ -50,6 +56,9 @@ var elementTypeShortNames = [...]string{
 	"chk",
 	"prog",
 	"tbl",
+	"sep",
+	"dlg",
+	"scroll",
 }
 
 func (t ElementType) ShortString() string {
