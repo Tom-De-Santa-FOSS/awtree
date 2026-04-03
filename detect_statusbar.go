@@ -3,7 +3,7 @@ package awtree
 // detectStatusBars finds rows at the top or bottom of the screen where a
 // majority of cells share a distinct background color, indicating a
 // status bar or menu bar.
-func detectStatusBars(g *Grid) []Element {
+func detectStatusBars(g *Grid, cfg DetectConfig, dbg *debugCollector) []Element {
 	var elements []Element
 
 	// Check first and last rows.
@@ -19,7 +19,7 @@ func detectStatusBars(g *Grid) []Element {
 		}
 		seen[row] = true
 
-		if bar, ok := detectBarRow(g, row); ok {
+		if bar, ok := detectBarRow(g, row, cfg, dbg); ok {
 			elements = append(elements, bar)
 		}
 	}
@@ -29,9 +29,8 @@ func detectStatusBars(g *Grid) []Element {
 
 // detectBarRow checks if a row looks like a status/menu bar:
 // majority of cells share a non-default background color.
-func detectBarRow(g *Grid, row int) (Element, bool) {
+func detectBarRow(g *Grid, row int, cfg DetectConfig, dbg *debugCollector) (Element, bool) {
 	bgCounts := make(map[Color]int)
-	nonEmpty := 0
 
 	for col := 0; col < g.Cols; col++ {
 		cell := g.At(row, col)
@@ -39,7 +38,6 @@ func detectBarRow(g *Grid, row int) (Element, bool) {
 			bgCounts[cell.BG]++
 			continue
 		}
-		nonEmpty++
 		bgCounts[cell.BG]++
 	}
 
@@ -54,8 +52,9 @@ func detectBarRow(g *Grid, row int) (Element, bool) {
 	}
 
 	// Must cover >60% of cells and not be the default color.
-	threshold := g.Cols * majorityThresholdPct / 100
+	threshold := g.Cols * cfg.MajorityThresholdPct / 100
 	if maxCount < threshold || dominantBG == DefaultColor {
+		dbg.reject("status_bars", "edge row did not meet configured dominant background threshold", Rect{Row: row, Col: 0, Width: g.Cols, Height: 1}, "")
 		return Element{}, false
 	}
 

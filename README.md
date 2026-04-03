@@ -17,6 +17,10 @@ g.SetText(5, 10, "[Save]", awtree.DefaultColor, awtree.DefaultColor, awtree.Attr
 elements := awtree.Detect(g)
 fmt.Println(awtree.Serialize(elements))
 // [1:btn*:"Save" 5,10 w6]
+
+debugElements := awtree.Detect(g, awtree.WithDebug(true), awtree.WithMaxButtonLabelLen(32))
+fmt.Println(awtree.SerializeJSON(debugElements))
+// {"elements":[...],"tree":[...],"debug":{"config":...}}
 ```
 
 ## Detection

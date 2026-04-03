@@ -84,6 +84,7 @@ type Element struct {
 	ID            int         `json:"id"`
 	Type          ElementType `json:"type"`
 	Label         string      `json:"label"`
+	Description   string      `json:"description,omitempty"`
 	Bounds        Rect        `json:"bounds"`
 	Focused       bool        `json:"focused"`
 	Enabled       bool        `json:"enabled"`
@@ -100,7 +101,8 @@ type Element struct {
 
 // ElementMap is the result of detecting elements on a styled grid.
 type ElementMap struct {
-	Elements []Element `json:"elements"`
-	Viewport Rect      `json:"viewport"`
-	Scrolled bool      `json:"scrolled"`
+	Elements []Element  `json:"elements"`
+	Viewport Rect       `json:"viewport"`
+	Scrolled bool       `json:"scrolled"`
+	Debug    *DebugInfo `json:"debug,omitempty"`
 }
