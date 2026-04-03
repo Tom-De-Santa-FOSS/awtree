@@ -96,25 +96,32 @@ func TestDetect_Phase3RolesRefsAndViewport(t *testing.T) {
 	if input == nil || input.Role != "textbox" {
 		t.Fatalf("input = %+v, want textbox role", input)
 	}
+	if input.Shortcut != "" {
+		t.Fatalf("input shortcut = %q, want empty", input.Shortcut)
+	}
 }
 
 func TestElementMapQuery_Phase3Selectors(t *testing.T) {
 	m := &ElementMap{Elements: BuildTree([]Element{
 		{ID: 1, Type: ElementPanel, Label: "Main", Enabled: true, Visible: true, Bounds: Rect{Row: 0, Col: 0, Width: 20, Height: 8}},
 		{ID: 2, Type: ElementButton, Label: "Save", Focused: true, Enabled: true, Bounds: Rect{Row: 1, Col: 1, Width: 6, Height: 1}},
-		{ID: 3, Type: ElementCheckbox, Label: "[x] Auto-save", Enabled: true, Checked: true, Visible: true, Bounds: Rect{Row: 2, Col: 1, Width: 13, Height: 1}},
+		{ID: 3, Type: ElementPanel, Label: "Nested", Enabled: true, Visible: true, Bounds: Rect{Row: 2, Col: 1, Width: 14, Height: 4}},
 		{ID: 4, Type: ElementButton, Label: "Cancel", Enabled: false, Visible: true, Bounds: Rect{Row: 6, Col: 22, Width: 8, Height: 1}},
+		{ID: 5, Type: ElementCheckbox, Label: "[x] Auto-save", Enabled: true, Checked: true, Visible: true, Bounds: Rect{Row: 3, Col: 2, Width: 13, Height: 1}},
+		{ID: 6, Type: ElementButton, Label: "Apply", Enabled: true, Visible: true, Bounds: Rect{Row: 4, Col: 2, Width: 7, Height: 1}},
 	})}
 	m.Elements[0].Ref = "panel[1]"
 	m.Elements[1].Ref = "panel[1]/button[1]"
-	m.Elements[2].Ref = "panel[1]/checkbox[1]"
+	m.Elements[2].Ref = "panel[1]/panel[1]"
 	m.Elements[3].Ref = "button[1]"
+	m.Elements[4].Ref = "panel[1]/panel[1]/checkbox[1]"
+	m.Elements[5].Ref = "panel[1]/panel[1]/button[1]"
 
-	if got := m.Query("button"); len(got) != 2 {
-		t.Fatalf("button query len = %d, want 2", len(got))
+	if got := m.Query("button"); len(got) != 3 {
+		t.Fatalf("button query len = %d, want 3", len(got))
 	}
-	if got := m.Query("panel > button"); len(got) != 1 || got[0].Label != "Save" {
-		t.Fatalf("panel > button = %+v, want Save", got)
+	if got := m.Query(`[ref="panel[1]"] > button`); len(got) != 1 || got[0].Label != "Save" {
+		t.Fatalf("outer panel > button = %+v, want Save", got)
 	}
 	if got := m.Query("button:focused"); len(got) != 1 || got[0].Label != "Save" {
 		t.Fatalf("button:focused = %+v, want Save", got)
@@ -122,20 +129,23 @@ func TestElementMapQuery_Phase3Selectors(t *testing.T) {
 	if got := m.Query(`[label="Save"]`); len(got) != 1 || got[0].ID != 2 {
 		t.Fatalf("label selector = %+v, want ID 2", got)
 	}
-	if got := m.Query("checkbox:checked"); len(got) != 1 || got[0].ID != 3 {
-		t.Fatalf("checkbox:checked = %+v, want ID 3", got)
+	if got := m.Query("checkbox:checked"); len(got) != 1 || got[0].ID != 5 {
+		t.Fatalf("checkbox:checked = %+v, want ID 5", got)
 	}
 	if got := m.Query("button:disabled"); len(got) != 1 || got[0].ID != 4 {
 		t.Fatalf("button:disabled = %+v, want ID 4", got)
 	}
-	if got := m.QueryOne("#3"); got == nil || got.Label != "[x] Auto-save" {
-		t.Fatalf("QueryOne(#3) = %+v, want checkbox", got)
+	if got := m.QueryOne("#5"); got == nil || got.Label != "[x] Auto-save" {
+		t.Fatalf("QueryOne(#5) = %+v, want checkbox", got)
 	}
 	if got := m.Query("button:nth(2)"); len(got) != 1 || got[0].ID != 4 {
 		t.Fatalf("button:nth(2) = %+v, want ID 4", got)
 	}
 	if got := m.Query(`[ref="panel[1]/button[1]"]`); len(got) != 1 || got[0].ID != 2 {
 		t.Fatalf("ref selector = %+v, want ID 2", got)
+	}
+	if got := m.Query("panel button"); len(got) != 2 {
+		t.Fatalf("panel button = %+v, want Save and Apply", got)
 	}
 	if got := m.Query("dialog button"); len(got) != 0 {
 		t.Fatalf("no-match query should be empty, got %+v", got)

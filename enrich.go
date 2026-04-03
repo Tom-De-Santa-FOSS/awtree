@@ -105,10 +105,21 @@ func inferChecked(el Element) bool {
 }
 
 func inferShortcut(g *Grid, el Element) string {
-	if shortcut := shortcutFromUnderline(g, el.Bounds); shortcut != "" {
-		return shortcut
+	if supportsUnderlineShortcut(el.Type) {
+		if shortcut := shortcutFromUnderline(g, el.Bounds); shortcut != "" {
+			return shortcut
+		}
 	}
 	return shortcutFromLabel(el.Label)
+}
+
+func supportsUnderlineShortcut(t ElementType) bool {
+	switch t {
+	case ElementButton, ElementMenuItem, ElementTab:
+		return true
+	default:
+		return false
+	}
 }
 
 func shortcutFromUnderline(g *Grid, bounds Rect) string {

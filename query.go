@@ -133,7 +133,7 @@ func parseSelector(selector string) []selectorStep {
 
 		if unicode.IsSpace(rune(ch)) && bracketDepth == 0 && parenDepth == 0 {
 			flush()
-			if len(steps) > 0 {
+			if len(steps) > 0 && pendingCombinator == "" {
 				pendingCombinator = "descendant"
 			}
 			continue
