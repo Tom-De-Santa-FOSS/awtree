@@ -74,9 +74,7 @@ func detectTables(g *Grid) []Element {
 		if !hasContentBothSides {
 			continue
 		}
-		if len(rows) >= 3 {
-			sepCols = append(sepCols, col)
-		} else if len(rows) >= 2 {
+		if len(rows) >= 2 {
 			sepCols = append(sepCols, col)
 		}
 	}

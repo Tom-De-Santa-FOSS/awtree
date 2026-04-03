@@ -23,6 +23,7 @@ func detectScrollIndicators(g *Grid) []Element {
 								Height: r2 - row + 1,
 							},
 						})
+						row = r2 // skip past this pair
 						break
 					}
 				}

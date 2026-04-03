@@ -1,6 +1,9 @@
 package awtree
 
-import "strings"
+import (
+	"strings"
+	"unicode/utf8"
+)
 
 // breadcrumbSeparators are the separator patterns that delimit breadcrumb
 // segments. Each must be space-padded (e.g. " > " not ">").
@@ -15,7 +18,7 @@ func detectBreadcrumbs(g *Grid) []Element {
 	for row := 0; row < g.Rows; row++ {
 		// Extract the full row text and find the non-space bounds.
 		text, startCol := extractRowText(g, row)
-		if len(text) == 0 {
+		if utf8.RuneCountInString(text) == 0 {
 			continue
 		}
 
@@ -38,7 +41,7 @@ func detectBreadcrumbs(g *Grid) []Element {
 				continue
 			}
 
-			if len(text) > maxWidth {
+			if utf8.RuneCountInString(text) > maxWidth {
 				continue
 			}
 
@@ -48,7 +51,7 @@ func detectBreadcrumbs(g *Grid) []Element {
 				Bounds: Rect{
 					Row:    row,
 					Col:    startCol,
-					Width:  len(text),
+					Width:  utf8.RuneCountInString(text),
 					Height: 1,
 				},
 			})
