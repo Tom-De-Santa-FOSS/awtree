@@ -4,7 +4,7 @@ package awtree
 //  1. Underlined spans (common text input pattern)
 //  2. Horizontal spans with a distinct non-default BG color surrounded by
 //     default-BG cells (form fields with highlighted background)
-func detectInputs(g *Grid) []Element {
+func detectInputs(g *Grid, cfg DetectConfig, dbg *debugCollector) []Element {
 	var elements []Element
 
 	for row := 0; row < g.Rows; row++ {
@@ -13,7 +13,7 @@ func detectInputs(g *Grid) []Element {
 
 		// Strategy 2: distinct-BG spans not at edge rows (those are status bars).
 		if row > 1 && row < g.Rows-2 {
-			elements = append(elements, findDistinctBGSpans(g, row)...)
+			elements = append(elements, findDistinctBGSpans(g, row, cfg, dbg)...)
 		}
 	}
 
@@ -64,7 +64,7 @@ func findUnderlinedSpans(g *Grid, row int) []Element {
 	return elements
 }
 
-func findDistinctBGSpans(g *Grid, row int) []Element {
+func findDistinctBGSpans(g *Grid, row int, cfg DetectConfig, dbg *debugCollector) []Element {
 	var elements []Element
 	col := 0
 
@@ -97,6 +97,7 @@ func findDistinctBGSpans(g *Grid, row int) []Element {
 
 		width := col - startCol
 		if width < 3 {
+			dbg.reject("inputs", "background span too short for an input", Rect{Row: row, Col: startCol, Width: width, Height: 1}, trimSpaces(label))
 			continue
 		}
 
@@ -104,11 +105,13 @@ func findDistinctBGSpans(g *Grid, row int) []Element {
 		leftDefault := startCol == 0 || g.At(row, startCol-1).BG == DefaultColor
 		rightDefault := col >= g.Cols || g.At(row, col).BG == DefaultColor
 		if !leftDefault && !rightDefault {
+			dbg.reject("inputs", "background span is enclosed by non-default backgrounds", Rect{Row: row, Col: startCol, Width: width, Height: 1}, trimSpaces(label))
 			continue
 		}
 
 		// Skip if it spans most of the row (likely a bar, not an input).
-		if width > g.Cols*majorityThresholdPct/100 {
+		if width > g.Cols*cfg.MajorityThresholdPct/100 {
+			dbg.reject("inputs", "background span exceeded configured bar threshold", Rect{Row: row, Col: startCol, Width: width, Height: 1}, trimSpaces(label))
 			continue
 		}
 

@@ -11,7 +11,7 @@ var explicitShortcutRE = regexp.MustCompile(`(?i)\b(?:ctrl|alt)\+[a-z0-9]+\b`)
 var caretShortcutRE = regexp.MustCompile(`\^([A-Za-z])\b`)
 var functionShortcutRE = regexp.MustCompile(`\bF([1-9]|1[0-2])\b`)
 
-func buildElementMap(g *Grid, elements []Element) *ElementMap {
+func buildElementMap(g *Grid, elements []Element, dbg *debugCollector) *ElementMap {
 	viewport := gridViewport(g)
 	tree := BuildTree(elements)
 	enriched := enrichElements(g, tree, viewport)
@@ -20,7 +20,15 @@ func buildElementMap(g *Grid, elements []Element) *ElementMap {
 		Elements: enriched,
 		Viewport: viewport,
 		Scrolled: hasElementType(enriched, ElementScrollIndicator),
+		Debug:    debugInfo(dbg),
 	}
+}
+
+func debugInfo(dbg *debugCollector) *DebugInfo {
+	if dbg == nil {
+		return nil
+	}
+	return dbg.info
 }
 
 func gridViewport(g *Grid) Rect {
@@ -59,6 +67,9 @@ func enrichElements(g *Grid, elements []Element, viewport Rect) []Element {
 
 	assignStableRefs(enriched, idxByID, parentByID)
 	inferRoles(enriched, idxByID, parentByID)
+	for i := range enriched {
+		enriched[i].Description = describeElement(enriched[i])
+	}
 
 	return enriched
 }
@@ -268,6 +279,37 @@ func inferRoles(elements []Element, idxByID map[int]int, parentByID map[int]int)
 			elements[i].Role = "option"
 		}
 	}
+}
+
+func describeElement(el Element) string {
+	parts := []string{humanElementName(el)}
+	if el.Label != "" {
+		parts = append(parts, `"`+el.Label+`"`)
+	}
+	if el.Focused {
+		parts = append(parts, "focused")
+	}
+	if !el.Enabled {
+		parts = append(parts, "disabled")
+	}
+	if el.Checked {
+		parts = append(parts, "checked")
+	}
+	if el.Selected {
+		parts = append(parts, "selected")
+	}
+	if el.Clipped {
+		parts = append(parts, "clipped")
+	}
+	return strings.Join(parts, " ")
+}
+
+func humanElementName(el Element) string {
+	name := el.Role
+	if name == "" {
+		name = el.Type.String()
+	}
+	return strings.ReplaceAll(name, "_", " ")
 }
 
 func maxInt(a, b int) int {

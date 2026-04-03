@@ -15,7 +15,7 @@ func detectScrollIndicators(g *Grid) []Element {
 				for r2 := row + 3; r2 < g.Rows; r2++ {
 					if g.At(r2, col).Char == '▼' {
 						results = append(results, Element{
-							Type:  ElementScrollIndicator,
+							Type: ElementScrollIndicator,
 							Bounds: Rect{
 								Row:    row,
 								Col:    col,
@@ -46,7 +46,7 @@ func detectScrollIndicators(g *Grid) []Element {
 				length := row - start
 				if length >= 3 {
 					results = append(results, Element{
-						Type:  ElementScrollIndicator,
+						Type: ElementScrollIndicator,
 						Bounds: Rect{
 							Row:    start,
 							Col:    col,
