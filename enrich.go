@@ -5,6 +5,9 @@ import (
 	"regexp"
 	"strings"
 	"unicode"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var explicitShortcutRE = regexp.MustCompile(`(?i)\b(?:ctrl|alt)\+[a-z0-9]+\b`)
@@ -156,7 +159,7 @@ func shortcutFromLabel(label string) string {
 	if match := explicitShortcutRE.FindString(label); match != "" {
 		parts := strings.SplitN(strings.ToLower(match), "+", 2)
 		if len(parts) == 2 {
-			return strings.Title(parts[0]) + "+" + strings.ToUpper(parts[1])
+			return cases.Title(language.English).String(parts[0]) + "+" + strings.ToUpper(parts[1])
 		}
 	}
 	if match := caretShortcutRE.FindStringSubmatch(label); len(match) == 2 {
