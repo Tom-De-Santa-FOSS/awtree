@@ -1,5 +1,7 @@
 package awtree
 
+import "unicode"
+
 // Attr is a bitmask of cell style attributes.
 type Attr uint16
 
@@ -97,6 +99,9 @@ func (g *Grid) SetText(row, col int, text string, fg, bg Color, attrs Attr) {
 	i := 0
 	for _, ch := range text {
 		width := RuneWidth(ch)
+		if width == 0 {
+			continue
+		}
 		g.Set(row, col+i, Cell{Char: ch, FG: fg, BG: bg, Attrs: attrs, Width: width})
 		for offset := 1; offset < width; offset++ {
 			g.Set(row, col+i+offset, Cell{FG: fg, BG: bg, Attrs: attrs, Continuation: true})
@@ -111,6 +116,9 @@ func RuneWidth(r rune) int {
 		return 1
 	}
 	if r < 0x20 || (r >= 0x7f && r < 0xa0) {
+		return 0
+	}
+	if unicode.Is(unicode.Mn, r) || unicode.Is(unicode.Mc, r) || unicode.Is(unicode.Me, r) || unicode.Is(unicode.Cf, r) {
 		return 0
 	}
 	if isWideRune(r) {

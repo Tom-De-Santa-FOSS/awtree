@@ -39,7 +39,11 @@ func traceButton(g *Grid, row, col int, open, close rune, cfg DetectConfig, dbg 
 	maxWidth := cfg.MaxButtonWidth
 
 	for c := col + 1; c < g.Cols && c < col+maxWidth; c++ {
-		ch := g.At(row, c).Char
+		cell := g.At(row, c)
+		if cell.Continuation {
+			continue
+		}
+		ch := cell.Char
 		if ch == close {
 			text := string(label)
 			if !isButtonLabel(text, cfg.MaxButtonLabelLen) {

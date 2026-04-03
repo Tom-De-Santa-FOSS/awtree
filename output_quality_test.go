@@ -56,6 +56,34 @@ func TestGrid_SetText_DoubleWidthCharacters(t *testing.T) {
 	}
 }
 
+func TestGrid_SetText_ZeroWidthCharactersDoNotShiftLayout(t *testing.T) {
+	g := NewGrid(2, 10)
+	g.SetText(0, 0, "e\u0301x", DefaultColor, DefaultColor, 0)
+
+	if got := g.At(0, 0); got.Char != 'e' || got.Width != 1 {
+		t.Fatalf("first cell = %+v, want base rune retained", got)
+	}
+	if got := g.At(0, 1).Char; got != 'x' {
+		t.Fatalf("cell[0,1] = %q, want x", got)
+	}
+	if got := RuneWidth('\u0301'); got != 0 {
+		t.Fatalf("RuneWidth(combining acute) = %d, want 0", got)
+	}
+}
+
+func TestDetect_ButtonWithDoubleWidthLabel(t *testing.T) {
+	g := NewGrid(3, 20)
+	g.SetText(1, 2, "[保存]", DefaultColor, DefaultColor, 0)
+
+	m := Detect(g)
+	for _, el := range m.Elements {
+		if el.Type == ElementButton && el.Label == "保存" {
+			return
+		}
+	}
+	t.Fatalf("button with double-width label not detected: %+v", m.Elements)
+}
+
 func TestColor_RGBColorRoundTrip(t *testing.T) {
 	color := RGBColor(0x12, 0x34, 0x56)
 	if !color.IsRGB() {
