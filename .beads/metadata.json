@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "server",
+  "dolt_database": "awtree",
+  "project_id": "0e1df935-084e-4519-9813-59e0ed78759c"
+}
