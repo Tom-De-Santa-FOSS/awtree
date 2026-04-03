@@ -50,7 +50,7 @@ func Detect(g *Grid) *ElementMap {
 	b.addAll(detectBreadcrumbs(g))
 	b.addAll(detectStatusBars(g))
 
-	return &ElementMap{Elements: b.elements}
+	return buildElementMap(g, b.elements)
 }
 
 // elementBuilder assigns sequential IDs and collects elements.
