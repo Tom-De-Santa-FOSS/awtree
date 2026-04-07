@@ -1,3 +1,5 @@
+# ABANDONED PROJECT
+
 # awtree
 
 Structured element detection for terminal UIs. Takes a styled character grid and produces a labeled element map — the terminal equivalent of a browser's accessibility tree.
